@@ -9,13 +9,6 @@ package chat_system;
  *
  * @author will2
  */
-public class Chat_System {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
+public class WriteThread {
     
 }
