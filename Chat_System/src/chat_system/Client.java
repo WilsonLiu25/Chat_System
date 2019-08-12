@@ -13,12 +13,12 @@ import java.util.Scanner;
  *
  * @author will2
  */
-public class ClientThread {
+public class Client {
     public static final String HOST_NAME = "localhost";
     public static final int HOST_PORT = 7777;
     public String userName;
     
-    public ClientThread(){
+    public Client(){
         
     }
     
@@ -61,7 +61,8 @@ public class ClientThread {
     }
     
     public static void main(String[] args) {
-        ClientThread clientThread = new ClientThread();
+        Client client = new Client();
+        client.startClient();
         
     }
     

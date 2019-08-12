@@ -17,7 +17,7 @@ import java.util.Random;
  */
 public class Server {
     private int min;
-    private in max;
+    private int max;
     private boolean stopRequested;
     private Random randomGenerator;
     private static final int PORT = 7777; //hardcoded port number tbc by marker
@@ -36,7 +36,7 @@ public class Server {
         
         try {
             serverSocket = new ServerSocket(PORT);
-            System.out.println("Server has started at " + InetAddress.getLocalHost() + "on port " + PORT);
+            System.out.println("Server has started at " + InetAddress.getLocalHost() + " on port " + PORT);
             
         } catch (IOException e){
             System.err.println("Server cannot listen on port: " + e);
@@ -48,9 +48,9 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 System.out.println("Connection has been made with " + socket.getInetAddress());
                 
-                ClientThread newClient = new ClientThread(this, socket);
-                Thread newClientThread = new Thread(newClient);
-                newClientThread.start();
+//                ClientThread newClient = new ClientThread(this, socket);
+//                Thread newClientThread = new Thread(newClient);
+//                newClientThread.start();
             }
             serverSocket.close();
                 
