@@ -5,7 +5,10 @@
  */
 package chat_system;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -14,56 +17,57 @@ import java.util.Scanner;
  * @author will2
  */
 public class Client {
-    public static final String HOST_NAME = "localhost";
-    public static final int HOST_PORT = 7777;
-    public String userName;
+    public static final String HOST_NAME = "172.28.50.73";
+    public static final int HOST_PORT = 5555;
+    private Thread clientInputThread;
+    private BufferedReader reader;
+    private PrintWriter writer;
+    private Socket socket;
     
-    public Client(){
+    public Client(ClientGUI gui){
         
     }
     
-    public void startClient() {
-        Socket socket = null;
-        
-        Scanner userInput = new Scanner(System.in);
-        
+    public void startClient(String username) {
         try {
             socket = new Socket(HOST_NAME, HOST_PORT);
+            System.out.println("You have successfully connected to the server " + socket.getRemoteSocketAddress());
             
-            Thread readThread = new Thread(new ReadThread(this, socket));
-            readThread.start();
+            try {
+                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                writer = new PrintWriter(socket.getOutputStream(), true);
+            } catch (IOException e) {
+                System.out.println("Error at the reader/writer streams: " + e);
+            }
             
-            Thread writeThread = new Thread(new WriteThread(this, socket));
-            writeThread.start();
-  
-                    
+            writer.println(username);
+            
+            clientInputThread = new Thread(new ReadThread(this, reader));
+            clientInputThread.start();
         } catch (IOException e) {
-            System.err.println("Client could not successfully make a connection: " + e);
-            System.exit(-1);
+            System.err.println("Error at startClient: " + e.getMessage());
         }
-        
-//        PrintWriter printer; //output stream
-//        BufferedReader reader; //input stream
-//        
-//        try {
-//            //create a output stream for the socket
-//            printer = new PrintWriter(socket.getOutputStream(), true);
-//            
-//            //create a bufferred input stream for this socket
-//            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//           
-//            
-//        } catch (IOException e){
-//            System.out.println("Client error with games: " + e);
-//        }
-            
-        
     }
     
-    public static void main(String[] args) {
-        Client client = new Client();
-        client.startClient();
+    public void closeClient() {
+        try{
+            socket.close();
+            reader.close();
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("ClosingClient failed to close: " + e);
+        }
         
+        System.exit(0);
     }
+    
+    public Socket getSocket() {
+        return socket;
+    }
+    
+    public ClientGUI getGui() {
+        return gui;
+    }
+    
     
 }

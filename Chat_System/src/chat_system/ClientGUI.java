@@ -13,14 +13,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -43,17 +46,28 @@ public class ClientGUI {
     private JList listClientField = new JList();
     private JScrollPane sideScrollPane = new JScrollPane(listClientField);
     private JScrollPane chatScrollPane = new JScrollPane(chatContent);
-    private BufferedWriter writer;
-    private BufferedReader reader;
+    
+    private String clientUsername;
+    private PrintWriter writer;
+
 
     public ClientGUI() {
         Frame();
         MainPanel(); //added to frame
         SidePanel(); //added to frame
         ChatPanel(); //added to chatPanel
-        BufferedWriter();
-
         
+            
+
+        clientUsername = JOptionPane.showInputDialog(null, "Username:");
+        Client client = new Client(this);
+        client.startClient(clientUsername);
+        
+        try{
+            writer = new PrintWriter(client.getSocket().getOutputStream(), true);
+        } catch (IOException e) {
+            System.out.println("Error at PrintWriter in constructor: " + e);
+        }
         
         
         frame.setVisible(true);
@@ -72,6 +86,7 @@ public class ClientGUI {
         
         chatContent.setPreferredSize(new Dimension(300,300));
         chatContent.setBackground(Color.GRAY);
+        chatContent.setEditable(false);
         mainPanel.add(chatContent, BorderLayout.CENTER); //the chat JTextArea
         
         frame.add(mainPanel);
@@ -88,24 +103,23 @@ public class ClientGUI {
         sendButton.setFont(new Font("Arial", Font.PLAIN, 20));
         sendButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent event){
-                String message = "Wilson: " + chatInputField.getText();
                 chatInputField.setBackground(Color.ORANGE);
                 
-                //test
-                chatContent.setText(message);
-                
-                try {
-                    writer.write(message);
-                    writer.append('c');
-                    writer.write("/r/n");
-                    writer.flush();
-                } catch (Exception e) {
-                    System.out.println("Error at Button Listener!: " + e);
-                    e.printStackTrace();
+                if (chatInputField.getText().equals("")) {
+                    JOptionPane.showMessageDialog(null, "Message is empty");
+                    
+                } else {
+                    //if (chatContent.getText().equals("") || chatContent == null) {
+                        String message = chatInputField.getText();
+                        
+                        chatContent.append("(" + clientUsername + "): " + message);
+                        writer.println("(" + clientUsername + "): " + message + "\r\n");
+                        chatInputField.setText(null);
+                        
+                    //}
                 }
-                
             }
-        }
+        });
         
         
         chatPanel.add(sendButton, BorderLayout.CENTER);
@@ -119,33 +133,17 @@ public class ClientGUI {
         sidePanel.add(sideScrollPane);
 
         frame.add(sidePanel, BorderLayout.EAST);
-        
-        
     }
     
-    public void BufferedWriter() {
-        try{
-            Socket socketClient= new Socket("localhost",5555);
+    public void printToChat(String message){
+        if (chatContent.getText().equals("") || chatContent == null) {
+            chatContent.append("/r/n" + message);
             
-            writer = new BufferedWriter(new OutputStreamWriter(socketClient.getOutputStream()));
-            
-            reader = new BufferedReader(new InputStreamReader(socketClient.getInputStream()));
-        }catch(Exception e){
-            System.err.println("Error at BufferedWriter!: " + e);
-            e.printStackTrace();
-        }
-        
-        try {
-            String serverMsg = ""; 
-            while((serverMsg = reader.readLine()) != null){
-                System.out.println("From server: " + serverMsg);
-                chatContent.append(serverMsg+"\n");
-
-            }  
-        } catch (Exception e) {
-            System.out.println("Error at reader.readLine: " + e);
         }
     }
+    
+    
+    
     
     public static void main(String[] args) {
        ClientGUI application = new ClientGUI();
